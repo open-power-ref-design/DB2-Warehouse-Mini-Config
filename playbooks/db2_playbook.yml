@@ -1,0 +1,52 @@
+---
+# Copyright 2017 IBM Corp.
+#
+# All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# master_playbook: Master driver for the POWERai recipe. Will setup storage server
+# on target node, as well as install any additional software specified by the
+# config.yml file.
+#
+- name: Gather facts from localhost
+  hosts: localhost
+  gather_facts: yes
+
+- name: Create partitions on all Drives
+  hosts: all
+  tasks:
+    - include: tasks/create_drive_partition.yml
+#      when: "groups.{{ nfs.nfs_server }} is defined and inventory_hostname in groups.{{ nfs.nfs_server }}"
+
+- name: Install GPFS
+  hosts: all
+  tasks:
+    - include: tasks/install-gpfs.yml
+
+- name: Configure GPFS
+  hosts: primary
+  tasks:
+    - include: tasks/configure-gpfs.yml
+
+- name: Install and Configure Docker.io
+  hosts: all
+  tasks:
+    - include: tasks/install-docker.yml
+
+- name: Install and Configure dashDB Local
+  hosts: all
+  tasks:
+    - include: tasks/install-dashDB.yml
+
+...

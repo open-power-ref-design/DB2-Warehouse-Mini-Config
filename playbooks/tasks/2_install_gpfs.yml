@@ -1,0 +1,46 @@
+---
+# Copyright 2016, IBM US, Inc.
+#
+# Cluster File System Install tasks:  (example <GPFS>)
+#
+
+- name: Copy <GPFS> to target machines
+# copy <GPFS> IMAGE from local machine over to target nodes
+# see xxx.config.yml file for detail
+copy: src="{{ reference_architecture['db2_mini_playbook']['gpfs_install'] }}" dest="/tmp/*.deb"
+
+#Create "Create file "./scripts/gpfs-fpo-node.cfg,gpfs-fpo-pool.cfg"
+- name: Copy disk config files
+  copy: src="{{ reference_architecture['db2_mini_playbook']['gpfs_nodes_layout'] }}" dest="/tmp/"
+  copy: src="{{ reference_architecture['db2_mini_playbook']['gpfs_disks_layout'] }}" dest="/tmp/"
+
+- name: apt-get update
+  shell: "apt-get update"
+
+  - name: gpart GPFS drives from gpfs-fpo-pool_ConfigA.cfg
+  #parted /dev/sde  -s -a optimal mklabel gpt mkpart P1 0% 100%
+    shell: "grep 'failureGroup=1,0,1' /tmp/gpfs-fpo-pool_ConfigA.cfg |cut -c23-30 | while read line; do parted $line -s -a optimal mklabel gpt mkpart P1 0% 100%; done"
+
+#- name: install specific Linux Kernel if NEEDED for GPFS
+  #shell: "apt-get install linux-image-4.4.0-57-generic"
+
+
+#- name: install prereqs
+  shell: "apt-get install -y ksh gawk m4 binutils libaio1 make cpp gcc g++ linux-headers-$(uname -r)"
+
+
+# Install <GPFS> GPFS Standard or Advance Edition
+ #- name: Install <GPFS>
+#standard edition
+  shell: "dpkg -i /tmp/gpfs.base*_ppc64el.deb /tmp/gpfs.gpl*deb gpfs.gskit*deb /tmp/gpfs.msg*deb /tmp/gpfs.ext*deb"
+  shell: "dpkg -i /tmp/gpfs.base*_ppc64el_update.deb"
+
+#advance edition
+# shell: "dpkg -i /tmp/gpfs.base*_ppc64el.deb gpfs.gpl*deb /tmp/gpfs.gskit*deb /tmp/gpfs.msg*deb /tmp/gpfs.ext*deb /tmp/gpfs.adv*deb /tmp/gpfs.crypto*deb"
+# shell: "dpkg -i /tmp/gpfs.base*_ppc64el_update.deb  <<update have to run after install or it will not update"
+
+#builds the GPFS™ portability layer
+- name: Build GPFS
+  shell: "/usr/lpp/mmfs/bin/mmbuildgpl"
+
+...

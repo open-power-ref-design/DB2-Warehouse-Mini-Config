@@ -1,0 +1,37 @@
+---
+# Copyright 2016, IBM US, Inc.
+#
+# Cluster File System Install tasks:  (example <GPFS>)
+#
+
+##
+
+#- Adding PATH for GPFS
+- name: adding GPFS path to profile
+  shell: "echo 'export PATH=$PATH:/usr/lpp/mmfs/bin' >>/root/.bash_rc"
+  become: true
+
+
+#https://www.ibm.com/support/knowledgecenter/en/SS6NHC/com.ibm.swg.im.dashdb.doc/admin/GPFS-FPO_setup.html
+
+
+#Config GPFS Cluster from Node file  (input Primary and Secondary Host)
+- name: config cluster
+  shell: "mmcrcluster -N /tmp/gpfs-fpo-node.cfg -p {{node-templates.compute-1.hostname[0]}} -s {{node-templates.compute-2.hostname[0]}} -C gpfs-fpo-cluster -A -r /usr/bin/ssh -R /usr/bin/scp"
+  shell: "mmchlicense server --accept -N {{node-templates.compute-1.hostname[0]}}"
+  shell: "mmchlicense server --accept -N {{node-templates.compute-2.hostname[0]}}"
+  shell: "mmchlicense server --accept -N {{node-templates.compute-2.hostname[1]}}"
+#Start GPFS on headnode
+  shell: "mmstartup -a"
+#check GPFS Status
+  shell: "mmgetstate -a -L"
+#create FPO Pool  --use fpo-poolfile
+  shell: "mmcrnsd -F /tmp/fpo-poolfile.cfg"
+#very all disks are added to FPO Pool
+  shell: "mmlsnsd -m"
+
+#Create the cluster file system /mnt/clusterfs
+  shell: "mmcrfs clusterfs -F /tmp/fpo-poolfile.cfg -j scatter -B 1048576 -A yes -i 4096 -m  3 -M 3 -n 32 -r 3 -R 3 -S relatime -E no -T {{ reference_architecture['db2_warehouse_playbook_ubuntu']['clusterfs_mount_dir'] }}"
+#mount the fs
+  shell: "mmmount clusterfs {{ reference_architecture['db2_warehouse_playbook_ubuntu']['clusterfs_mount_dir'] }} -N all"
+...

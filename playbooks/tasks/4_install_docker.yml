@@ -1,0 +1,35 @@
+---
+# Copyright 2016, IBM US, Inc.
+#
+# Cluster File System Install tasks:  (example <docker install and Setup >)
+#
+- name: apt-get update
+  shell: "apt-get update"
+
+
+# ( version used at the time of this update 1.12.6)
+- name: install docker.io for Ubuntu 16+
+  shell: "apt-get install -y docker.io thin-provisioning-tools lvm2"
+  when: ansible_os_family == "Debian"
+
+- name: install docker.io for RHEL/CENTOS
+  shell: yum -y install docker device-mapper-persistent-data lvm2"
+  when: ansible_os_family == "RedHat"
+
+
+- name: copy "config_dockerThinpool.sh" script to dest host
+  template:
+    src: "{{ playbook_dir }}/scripts/config_dockerThinpool.sh"
+    dest: /tmp/config_dockerThinpool.sh
+
+
+- name: configure docker thin-pool
+  shell: "/tmp/config_dockerThinpool.sh {{ item }}"
+  with_items: "{{ reference-architecture.dockerpool_disk }}"
+
+
+#refresh caches
+- shell: apt-get update
+  ignore_errors: yes
+
+...

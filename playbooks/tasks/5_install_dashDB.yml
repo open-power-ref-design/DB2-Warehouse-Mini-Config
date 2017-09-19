@@ -1,0 +1,32 @@
+---
+# Copyright 2016, IBM US, Inc.
+#
+# Cluster File System Install tasks:  (example <GPFS>)
+#
+#https://www.ibm.com/support/knowledgecenter/en/SS6NHC/com.ibm.swg.im.dashdb.doc/admin/linux_deploy.html
+- name: Copy dashDB nodes config file to ClusterFS folder
+  copy: src="{{ reference_architecture['db2_warehouse_playbook_ubuntu']['db2_nodes_layout'] }}" dest="{{ reference-architecture.gpfs_clusterfs_mnt }}/nodes"
+
+- name: update "nodes" to matching this config
+  shell: "sed -e 's/bluhelix16:10.10.10.2/bluhelix00:192.168.1.10/' -e 's/bluhelix17:10.10.10.3/bluhelixad:192.168.1.8/' <./nodes > "
+
+- name: db2_local_image
+  copy: src="{{ reference_architecture['db2_warehouse_playbook_ubuntu']['dblocal_files'] }}" dest="/tmp/*.tar"
+  shell: "docker load < /tmp/*.tar"
+  when: "{{ 'db2_local_image' in reference_architecture['db2_warehouse_playbook_ubuntu']['db2_image_selection'] }}"
+  become: true
+
+
+- name: db2_online_image
+    shell: "docker login -u={{ item.name }} -p={{ item.password }}"
+    with_items: "{{ reference_architecture.docker_credential }}"
+    shell: "docker pull ibmdashdb/local:latest-ppcle"
+  when: "{{ 'db2_online_image' in reference_architecture['db2_warehouse_playbook_ubuntu']['db2_image_selection'] }}"
+  become: true
+
+
+- name: deploy_db2_container
+    shell: "docker run -d -it --privileged=true --net=host --name=dashDB -v {{ reference-architecture.gpfs_clusterfs_mnt }}:/mnt/bludata0 -v {{ reference-architecture.gpfs_clusterfs_mnt }}:/mnt/blumeta0 ibmdashdb/local:latest-ppcle"
+    become: true
+
+...

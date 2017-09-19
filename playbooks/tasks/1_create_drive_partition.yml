@@ -1,0 +1,15 @@
+---
+# Copyright 2016, IBM US, Inc.
+#
+# Cluster File System Install tasks:  (example <GPFS>)
+#
+
+  - name: gpart Dockervg on drive or logical volume
+  #parted /dev/sdb  -s -a optimal mklabel gpt mkpart P1 0% 100%
+    shell: "parted {{ item }}  -s -a optimal mklabel gpt mkpart P1 0% 100%"
+    with_items: "{{ reference-architecture.db2_mini_playbook.dockerpool_disk }}"
+
+
+
+
+...
