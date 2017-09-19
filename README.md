@@ -1,5 +1,5 @@
 
-# DB2 Warehouse Mini
+# DB2 Warehouse- Mini Config
 
 ## Introduction
 This repository is a comprehensive set of instructions, rules, and automation tools for building an OpenPOWER-based DB2 Warehouse Mini config with "locally attached storage" and Spectrum Scale GPFS FPO.
