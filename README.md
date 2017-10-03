@@ -13,7 +13,7 @@ This repository is a comprehensive set of instructions, rules, and automation to
         https://www.ibm.com/id-en/marketplace/scale-out-file-and-object-storage
     - Obstain dashDB Install Image via DockerHub (https://hub.docker.com/r/dashdb/local/)  or via IBM website (http://ibm.biz/dashDBLocal)
     (https://www.ibm.com/support/knowledgecenter/en/SS6NHC/com.ibm.swg.im.dashdb.doc/admin/local_prereqs-POWER.html)
-    - Obstain/Provide additional Software License and Support as needed ..ie OS, Docker
+    - Obtain/Provide additional Software License and Support as needed ..ie OS, Docker
 
 Notes: if you plan to deploy a larger node config,  Please review the DB2 Warehouse sizing guide, and adjust GPFS FPO config accordingly.
 This guide does not cover this modifications. Contact IBM for further help.
